@@ -33,7 +33,10 @@ module cpumemory #(parameter WORD_SIZE=32,FILENAME="init.coe") (
     input wire data_mem_write,   
     input [7:0] data_address,    
     input wire[WORD_SIZE-1:0] data_write_data ,    
-    output wire[WORD_SIZE-1:0] data_read_data  
+    output wire[WORD_SIZE-1:0] data_read_data 
+
+    //ignore memread signal, said in lecture 3/1
+
 );
 
 // ------------------------------------------
