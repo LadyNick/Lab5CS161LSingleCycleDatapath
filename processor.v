@@ -38,12 +38,29 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     assign reg1_addr = instruction_out[25:21];
     assign reg2_addr = instruction_out[20:16];
     assign write_reg_addr = instruction_out[15:11];
+    assign instr_extend = instruction_out[15:0]; //step 2?
+    wire writeregmuxout;
+    wire regdata1;
+    wire regdata2;
+    wire regdstselectin;
+    wire branchandmux;
+    wire memreaddatamem;
+    wire memtoregmux;
+    wire aluopaluctrl;
+    wire memwritedatamem;
+    wire alusrcmux;
+    wire regwriteregwrite;
+    wire datamuxwritedataout;
+    wire zero;
+    wire aluout;
+    wire datamemmuxchan2;
+    wire pcadderout;
 
     alu pc_adder(
         .alu_control_in(`ALU_ADD), 
         .channel_a_in(pc_out), 
         .channel_b_in(32'h4), 
-        .alu_result_out(pc_in));
+        .alu_result_out(pcadderout));
 
     //Wires for the PC
     wire [WORD_SIZE-1:0] pc_in;
@@ -59,17 +76,97 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     //Wires for the insruction
     wire [WORD_SIZE-1:0] instruction_out;
 
-    cpumemory RAM(
+    cpumemory RAM( //Instruction memory
         .clk(clk), 
         .rst(rst), 
-        .instr_read_address(), 
-        .instr_instruction(), 
-        .data_address(), 
-        .data_write_data(), 
-        .data_read_data());
+        .instr_read_address(pc_out), 
+        .instr_instruction(instruction_out)
+        //.data_address(),  TA says we can ignore these but I'll ask later
+        //.data_write_data(), 
+        /*.data_read_data())*/
+    );   
 
-    
+    //STEP 2
 
+    control_unit Control(
+        .instr_op(instr_opcode),
+        .reg_dst(regdstselectin), 
+        .branch(branchandmux),
+        .mem_read(memreaddatamem),
+        .mem_to_reg(memtoregmux),
+        .alu_op(aluopaluctrl),
+        .mem_write(memwritedatamem),
+        .alu_src(alusrcmux),
+        .reg_write(regwriteregwrite));
+
+    cpu_registers Registers(
+        .clk(clk),
+        .rst(rst),
+        .reg_write(regwriteregwrite),
+        .read_register_1(reg1_addr),
+        .read_register_2(reg2_addr),
+        .write_register(writeregmuxout), 
+        .write_data(datamuxwritedataout), 
+        .read_data_1(regdata1), 
+        .read_data_2(regdata2)); 
+
+    mux_2_1 WriteRegMux(
+        .select_in(regdstselectin),
+        .datain1(reg2_addr),
+        .datain2(write_reg_addr),
+        .data_out(writeregmuxout));
+
+    //STEP 3
+    alu_control ALUControl(
+        .alu_op(aluopaluctrl), 
+        .instruction_5_0(instruction_out[5:0]),
+        .alu_out(aluctrloutalu)); 
+
+    mux_2_1 MuxAlu(
+        .select_in(alusrcmux),
+        .datain1(read_data_2),
+        .datain2(instruction_out[15:0]), //sign extend inst 15-0 to 32 bits
+        .data_out(alumuxout));
+
+    alu ALU(
+        .alu_control_in(aluctrloutalu), 
+        .channel_a_in(read_data_1),
+        .channel_b_in(alumuxout),
+        .zero_out(zero),
+        .alu_result_out(aluout));
+
+    //STEP 4
+    cpumemory DataMemory(
+        .clk(clk),
+        .rst(rst),
+        //.instr_read_address(), TA says we can ignore these
+        //.instr_instruction(),
+        .data_mem_write(memwritedatamem),
+        .data_address(aluout),
+        .data_write_data(regdata2),
+        .data_read_data(datamemmuxchan2));
+
+        //TA also said to ignore memread signal
+
+    //STEP 5
+
+    wire shiftleft2 = instruction_out[15:0] << 2;
+
+    alu Step5(
+        .alu_control_in(`ALU_ADD),
+        .channel_a_in(pcadderout),
+        .channel_b_in(shiftleft2),
+        //.zero_out(), there is no zero in the image so 
+        //i assume we can ignore
+        .alu_result_out(step5muxchan2));
+
+    wire step5muxand = branchandmux & zero; 
+
+    mux_2_1 step5mux(
+        .select_in(step5muxand),
+        .datain1(pcadderout),
+        .datain2(step5muxchan2),
+        .data_out(pc_in)); 
 
 
 
