@@ -39,7 +39,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     assign reg2_addr = instruction_out[20:16];
     assign write_reg_addr = instruction_out[15:11];
     assign instr_extend = instruction_out[15:0]; //step 2?
-    wire [4:0] writeregmuxout;
+    wire [WORD_SIZE-1:0] writeregmuxout;
     wire [WORD_SIZE-1:0] regdata1;
     wire [WORD_SIZE-1:0] regdata2;
     wire regdstselectin;
@@ -52,7 +52,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     wire regwriteregwrite;
     wire [WORD_SIZE-1:0] datamuxwritedataout;
     wire zero;
-    wire [7:0] aluout;
+    wire [WORD_SIZE-1:0] aluout;
     wire [3:0] aluctrloutalu;
     wire [WORD_SIZE-1:0] alumuxout;
     wire [WORD_SIZE-1:0] datamemmuxchan2;
@@ -108,15 +108,15 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .reg_write(regwriteregwrite),
         .read_register_1(reg1_addr),
         .read_register_2(reg2_addr),
-        .write_register(writeregmuxout), 
+        .write_register(writeregmuxout[4:0]), //expects 5 bits 
         .write_data(datamuxwritedataout), 
         .read_data_1(regdata1), 
         .read_data_2(regdata2)); 
 
     mux_2_1 WriteRegMux(
         .select_in(regdstselectin),
-        .datain1(reg2_addr),
-        .datain2(write_reg_addr),
+        .datain1({27'd0, reg2_addr}),
+        .datain2({27'd0, write_reg_addr}),
         .data_out(writeregmuxout));
 
     //STEP 3
@@ -125,16 +125,17 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .instruction_5_0(instruction_out[5:0]),
         .alu_out(aluctrloutalu)); 
 
+    
 
     mux_2_1 MuxAlu(
         .select_in(alusrcmux),
-        .datain1(read_data_2),
-        .datain2(instruction_out[15:0]), //sign extend inst 15-0 to 32 bits
+        .datain1(regdata2),
+        .datain2({16'd0, instruction_out[15:0]}), //sign extend inst 15-0 to 32 bits
         .data_out(alumuxout));
 
     alu ALU(
         .alu_control_in(aluctrloutalu), 
-        .channel_a_in(read_data_1),
+        .channel_a_in(regdata1),
         .channel_b_in(alumuxout),
         .zero_out(zero),
         .alu_result_out(aluout));
@@ -146,7 +147,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         //.instr_read_address(), TA says we can ignore these
         //.instr_instruction(),
         .data_mem_write(memwritedatamem),
-        .data_address(aluout),
+        .data_address(aluout[7:0]),
         .data_write_data(regdata2),
         .data_read_data(datamemmuxchan2));
 
