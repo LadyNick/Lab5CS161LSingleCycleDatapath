@@ -39,22 +39,25 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     assign reg2_addr = instruction_out[20:16];
     assign write_reg_addr = instruction_out[15:11];
     assign instr_extend = instruction_out[15:0]; //step 2?
-    wire writeregmuxout;
-    wire regdata1;
-    wire regdata2;
+    wire [4:0] writeregmuxout;
+    wire [WORD_SIZE-1:0] regdata1;
+    wire [WORD_SIZE-1:0] regdata2;
     wire regdstselectin;
     wire branchandmux;
     wire memreaddatamem;
     wire memtoregmux;
-    wire aluopaluctrl;
+    wire [1:0] aluopaluctrl;
     wire memwritedatamem;
     wire alusrcmux;
     wire regwriteregwrite;
-    wire datamuxwritedataout;
+    wire [WORD_SIZE-1:0] datamuxwritedataout;
     wire zero;
-    wire aluout;
-    wire datamemmuxchan2;
-    wire pcadderout;
+    wire [7:0] aluout;
+    wire [3:0] aluctrloutalu;
+    wire [WORD_SIZE-1:0] alumuxout;
+    wire [WORD_SIZE-1:0] datamemmuxchan2;
+    wire [WORD_SIZE-1:0] pcadderout;
+    wire [WORD_SIZE-1:0] step5muxchan2;
 
     alu pc_adder(
         .alu_control_in(`ALU_ADD), 
@@ -79,7 +82,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     cpumemory RAM( //Instruction memory
         .clk(clk), 
         .rst(rst), 
-        .instr_read_address(pc_out), 
+        .instr_read_address(pc_out[7:0]), 
         .instr_instruction(instruction_out)
         //.data_address(),  TA says we can ignore these but I'll ask later
         //.data_write_data(), 
@@ -122,6 +125,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .instruction_5_0(instruction_out[5:0]),
         .alu_out(aluctrloutalu)); 
 
+
     mux_2_1 MuxAlu(
         .select_in(alusrcmux),
         .datain1(read_data_2),
@@ -150,7 +154,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
 
     //STEP 5
 
-    wire shiftleft2 = instruction_out[15:0] << 2;
+    wire [WORD_SIZE-1:0] shiftleft2 = instruction_out[15:0] << 2;
 
     alu Step5(
         .alu_control_in(`ALU_ADD),
