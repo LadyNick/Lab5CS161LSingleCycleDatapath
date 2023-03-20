@@ -79,14 +79,15 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     //Wires for the insruction
     wire [WORD_SIZE-1:0] instruction_out;
 
-    cpumemory RAM( //Instruction memory
+    cpumemory #(.FILENAME(MEM_FILE)) RAM( //Instruction memory, also for step 4 cpumemory module
         .clk(clk), 
         .rst(rst), 
         .instr_read_address(pc_out[7:0]), 
-        .instr_instruction(instruction_out)
-        //.data_address(),  TA says we can ignore these but I'll ask later
-        //.data_write_data(), 
-        /*.data_read_data())*/
+        .instr_instruction(instruction_out),
+        .data_mem_write(memwritedatamem),
+        .data_address(aluout[7:0]),
+        .data_write_data(regdata2),
+        .data_read_data(datamemmuxchan2)
     );   
 
     //STEP 2
@@ -141,7 +142,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .alu_result_out(aluout));
 
     //STEP 4
-    cpumemory DataMemory(
+    /*cpumemory DataMemory(
         .clk(clk),
         .rst(rst),
         //.instr_read_address(), TA says we can ignore these
@@ -149,7 +150,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .data_mem_write(memwritedatamem),
         .data_address(aluout[7:0]),
         .data_write_data(regdata2),
-        .data_read_data(datamemmuxchan2));
+        .data_read_data(datamemmuxchan2)); */
 
         //TA also said to ignore memread signal
 
