@@ -37,8 +37,10 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     assign instr_opcode = instruction_out[31:26];
     assign reg1_addr = instruction_out[25:21];
     assign reg2_addr = instruction_out[20:16];
-    assign write_reg_addr = instruction_out[15:11];
+    assign write_reg_addr = writeregmuxout;
+    assign write_reg_data = step4muxout;
     assign instr_extend = instruction_out[15:0]; //step 2?
+    wire [WORD_SIZE-1:0] step4muxout; 
     wire [WORD_SIZE-1:0] writeregmuxout;
     wire [WORD_SIZE-1:0] regdata1;
     wire [WORD_SIZE-1:0] regdata2;
@@ -117,7 +119,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     mux_2_1 WriteRegMux(
         .select_in(regdstselectin),
         .datain1({27'd0, reg2_addr}),
-        .datain2({27'd0, write_reg_addr}),
+        .datain2({27'd0, instruction_out[15:11]}),
         .data_out(writeregmuxout));
 
     //STEP 3
@@ -142,6 +144,13 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .alu_result_out(aluout));
 
     //STEP 4
+    mux_2_1 step4mux(
+        .select_in(memtoregmux),
+        .datain1(aluout),
+        .datain2(datamemmuxchan2),
+        .data_out(step4muxout));
+
+
     /*cpumemory DataMemory(
         .clk(clk),
         .rst(rst),
