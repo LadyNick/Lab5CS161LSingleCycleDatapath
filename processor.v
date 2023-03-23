@@ -146,8 +146,8 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     //STEP 4
     mux_2_1 step4mux(
         .select_in(memtoregmux),
-        .datain1(aluout),
-        .datain2(datamemmuxchan2),
+        .datain1(datamemmuxchan2),
+        .datain2(aluout),
         .data_out(step4muxout));
 
 
