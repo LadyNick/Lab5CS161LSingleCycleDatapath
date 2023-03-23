@@ -84,7 +84,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     cpumemory #(.FILENAME(MEM_FILE)) RAM( //Instruction memory, also for step 4 cpumemory module
         .clk(clk), 
         .rst(rst), 
-        .instr_read_address(pc_out[9:2]), 
+        .instr_read_address(pc_out[7:0]), 
         .instr_instruction(instruction_out),
         .data_mem_write(memwritedatamem),
         .data_address(aluout[7:0]),
@@ -146,8 +146,8 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     //STEP 4
     mux_2_1 step4mux(
         .select_in(memtoregmux),
-        .datain1(datamemmuxchan2),
-        .datain2(aluout),
+        .datain1(aluout),
+        .datain2(datamemmuxchan2),
         .data_out(step4muxout));
 
 
