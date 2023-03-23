@@ -39,6 +39,8 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     assign reg2_addr = instruction_out[20:16];
     assign write_reg_addr = writeregmuxout;
     assign write_reg_data = step4muxout;
+    assign reg1_data = regdata1;
+    assign reg2_data = regdata2;
     assign instr_extend = instruction_out[15:0]; //step 2?
     wire [WORD_SIZE-1:0] step4muxout; 
     wire [WORD_SIZE-1:0] writeregmuxout;
@@ -84,7 +86,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     cpumemory #(.FILENAME(MEM_FILE)) RAM( //Instruction memory, also for step 4 cpumemory module
         .clk(clk), 
         .rst(rst), 
-        .instr_read_address(pc_out[7:0]), 
+        .instr_read_address(pc_out[9:2]), 
         .instr_instruction(instruction_out),
         .data_mem_write(memwritedatamem),
         .data_address(aluout[7:0]),
