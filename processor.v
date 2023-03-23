@@ -52,7 +52,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     wire memwritedatamem;
     wire alusrcmux;
     wire regwriteregwrite;
-    wire [WORD_SIZE-1:0] datamuxwritedataout;
+    //wire [WORD_SIZE-1:0] datamuxwritedataout;
     wire zero;
     wire [WORD_SIZE-1:0] aluout;
     wire [3:0] aluctrloutalu;
@@ -112,7 +112,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .read_register_1(reg1_addr),
         .read_register_2(reg2_addr),
         .write_register(writeregmuxout[4:0]), //expects 5 bits 
-        .write_data(datamuxwritedataout), 
+        .write_data(step4muxout), 
         .read_data_1(regdata1), 
         .read_data_2(regdata2)); 
 
