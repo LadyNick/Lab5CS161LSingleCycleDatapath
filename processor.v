@@ -134,11 +134,15 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
    //check for sign of instruction_out 16 bits
     wire extend;
 
-    if(instruction_out[15] == 0)
+    always @(posedge clk)begin
+        extend[32:0] <= { {16{instruction_out[15]}}, instruction_out[15:0]};
+    end
+
+    /*if(instruction_out[15] == 0)
         assign extend = {16'h0000, instruction_out[15:0]};
     else
         assign extend = {16'hFFFF, instruction_out[15:0]};
-   
+    */
 
     mux_2_1 MuxAlu(
         .select_in(alusrcmux),
