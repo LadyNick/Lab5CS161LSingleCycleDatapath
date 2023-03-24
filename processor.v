@@ -135,9 +135,9 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
     wire extend;
 
     if(instruction_out[15] == 0)
-        extend = {16'b0, instruction_out[15:0]};
+        assign extend = {16'b0, instruction_out[15:0]};
     else
-        extend = {16'b1, instruction_out[15:0]};
+        assign extend = {16'b1, instruction_out[15:0]};
    
 
     mux_2_1 MuxAlu(
