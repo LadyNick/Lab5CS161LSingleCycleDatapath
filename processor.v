@@ -132,7 +132,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
 
 
    //check for sign of instruction_out 16 bits
-    wire [32:0] extend = { {16{instruction_out[15]}}, instruction_out[15:0]};
+    wire [31:0] extend = { {16{instruction_out[15]}}, instruction_out[15:0]};
     
     mux_2_1 MuxAlu(
         .select_in(alusrcmux),
