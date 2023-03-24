@@ -130,12 +130,20 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .instruction_5_0(instruction_out[5:0]),
         .alu_out(aluctrloutalu)); 
 
-    
+
+   //check for sign of instruction_out 16 bits
+    wire extend;
+
+    if(instruction_out[15] == 0)
+        extend = {16'b0, instruction_out[15:0]};
+    else
+        extend = {16'b1, instruction_out[15:0]};
+   
 
     mux_2_1 MuxAlu(
         .select_in(alusrcmux),
         .datain1(regdata2),
-        .datain2({16'd0, instruction_out[15:0]}), //sign extend inst 15-0 to 32 bits
+        .datain2(extend), //sign extend inst 15-0 to 32 bits
         .data_out(alumuxout));
 
     alu ALU(
@@ -164,10 +172,9 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         .data_read_data(datamemmuxchan2)); */
 
         //TA also said to ignore memread signal
-
     //STEP 5
 
-    wire [WORD_SIZE-1:0] shiftleft2 = instruction_out[15:0] << 2;
+    wire [WORD_SIZE-1:0] shiftleft2 = extend << 2;
 
     alu Step5(
         .alu_control_in(`ALU_ADD),
