@@ -168,7 +168,7 @@ module processor #(parameter WORD_SIZE=32,MEM_FILE="init.coe") (
         //TA also said to ignore memread signal
     //STEP 5
 
-    wire [WORD_SIZE-1:0] shiftleft2 = extend << 2;
+    wire [WORD_SIZE-1:0] shiftleft2 = extend; //<< 2;
 
     alu Step5(
         .alu_control_in(`ALU_ADD),
